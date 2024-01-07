@@ -1,0 +1,110 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.24.24.22086",
+      "templateHash": "2755356465190976040"
+    },
+    "name": "Static Web Apps Module",
+    "description": "A Bicep module which deploys a static web app. ",
+    "owner": "jameswestall"
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The Azure region which the Static Web App will be deployed to."
+      }
+    },
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": " The name of the Static Web App."
+      }
+    },
+    "sku": {
+      "type": "object",
+      "defaultValue": {
+        "name": "Free",
+        "tier": "Free"
+      },
+      "metadata": {
+        "description": "Optional. The SKU of the Static Web App. Defaults to Free Tier."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "doc": "https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/tag-resources?tabs=bicep#arm-templates",
+        "example": {
+          "tagKey": "string"
+        },
+        "description": "Optional. Resource tags."
+      }
+    },
+    "resourcelock": {
+      "type": "string",
+      "defaultValue": "NotSpecified",
+      "allowedValues": [
+        "NotSpecified",
+        "ReadOnly",
+        "CanNotDelete"
+      ],
+      "metadata": {
+        "description": "Optional. Specify the type of resource lock."
+      }
+    }
+  },
+  "variables": {
+    "lockName": "[toLower(format('{0}-{1}-lck', parameters('name'), parameters('resourcelock')))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/staticSites",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "sku": "[parameters('sku')]",
+      "properties": {
+        "stagingEnvironmentPolicy": "Enabled",
+        "allowConfigFileUpdates": true,
+        "provider": "None",
+        "enterpriseGradeCdnStatus": "Disabled"
+      }
+    },
+    {
+      "condition": "[not(equals(parameters('resourcelock'), 'NotSpecified'))]",
+      "type": "Microsoft.Authorization/locks",
+      "apiVersion": "2020-05-01",
+      "scope": "[format('Microsoft.Web/staticSites/{0}', parameters('name'))]",
+      "name": "[variables('lockName')]",
+      "properties": {
+        "level": "[parameters('resourcelock')]",
+        "notes": "[if(equals(parameters('resourcelock'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot modify the resource or child resources.')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/staticSites', parameters('name'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the deployed staticWebApp service."
+      },
+      "value": "[parameters('name')]"
+    },
+    "resourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the deployed staticWebApp service."
+      },
+      "value": "[resourceId('Microsoft.Web/staticSites', parameters('name'))]"
+    }
+  }
+}
