@@ -1,0 +1,90 @@
+name: 1. Deploy Azure Resources
+run-name: Deploying ${{github.event.inputs.parameter_file_name}} to Subscription ${{github.event.inputs.subscription_id}} in ${{github.event.inputs.location}}
+
+on:
+  workflow_dispatch:
+    inputs:
+      subscription_id:
+        description: "Azure subscription id to be used for website deployment"
+        type: string
+      parameter_file_name:
+        description: "Name of the parameter file to use for website deployment"
+        type: string
+        default: nonproduction.parameters.json
+      location:
+        description: "Azure resources deployment location"
+        type: choice
+        options:
+          - EastUS2
+          # update if desired Azure resource deployment location is unlisted
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - bicep/main.bicep
+
+env:
+  template_folder_path: bicep/ # path to directory containing bicep template
+  template_file_name: main.bicep # name of the bicep template file including extension
+  parameter_file_path: bicep/${{ inputs.parameter_file_name }} # path to bicep template parameter file
+  location: ${{ inputs.location }} # location for resource deployment in azure
+  subscription_id: ${{ inputs.subscription_id }} # azure subscription id (not required for tenant level deployments)
+  oidc_app_reg_client_id: "47cb1995-77f6-4381-9ab6-cb026b270876" #TODO - Replace with Secret # client id of the azure application registration used to authenticate to azure using oidc, refer to https://learn.microsoft.com/en-us/azure/active-directory/develop/workload-identity-federation-create-trust?pivots=identity-wif-apps-methods-azp#github-actions
+  azure_tenant_id: "e27c8f55-2c8d-4851-8059-1199a3dab677" #TODO - Replace with Secret # azure ad tenant/directory id
+  environment: "website" # name of the github environment
+  deployment_name: "deploy_gabc_website" # name of the arm deployment"
+  skip_tests: "none" # tests to exclude , e.g. "'apiVersions Should Be Recent','Template Should Not Contain Blanks'"
+  azure_webapp_name: ${{ inputs.azure_webapp_name }}
+
+jobs:
+  initialise_vars:
+    runs-on: ubuntu-latest
+    outputs:
+      template_folder_path: ${{ env.template_folder_path }}
+      template_file_name: ${{ env.template_file_name }}
+      parameter_file_path: ${{ env.parameter_file_path }}
+      location: ${{ env.location }}
+      subscription_id: ${{ env.subscription_id }}
+      oidc_app_reg_client_id: ${{ env.oidc_app_reg_client_id }}
+      azure_tenant_id: ${{ env.azure_tenant_id }}
+      environment: ${{ env.environment }}
+      deployment_name: ${{ env.deployment_name }}
+      skip_tests: ${{ env.skip_tests }}
+      azure_webapp_name: ${{ env.azure_webapp_name }}
+    steps:
+      - name: Initialise Variables
+        run: echo "Initialising environment variables"
+
+  build-azure:
+    needs: initialise_vars
+    permissions:
+      id-token: write
+      contents: read
+    uses: jameswestall/global-azure-bootcamp-melbourne-website/.github/workflows/template-azure-build.yml@main
+    with:
+      environment: ${{ needs.initialise_vars.outputs.environment }}
+      test_trigger: ${{ github.event_name }}
+      template_file_path: ${{ needs.initialise_vars.outputs.template_folder_path }}/${{ needs.initialise_vars.outputs.template_file_name }}
+      parameter_file_path: ${{ needs.initialise_vars.outputs.parameter_file_path }}
+      skip_tests: ${{ needs.initialise_vars.outputs.skip_tests }}
+      continue_on_failed_tests: false
+      oidc_app_reg_client_id: ${{ needs.initialise_vars.outputs.oidc_app_reg_client_id }}
+      azure_tenant_id: ${{ needs.initialise_vars.outputs.azure_tenant_id }}
+
+  deploy-azure:
+    needs: [initialise_vars, build-azure]
+    if: ${{ github.ref == 'refs/heads/main' }}
+    permissions:
+      id-token: write
+      contents: read
+    uses: jameswestall/global-azure-bootcamp-melbourne-website/.github/workflows/template-azure-deploy.yml@main
+    with:
+      environment: ${{ needs.initialise_vars.outputs.environment }}
+      location: ${{ needs.initialise_vars.outputs.location }}
+      subscription_id: ${{ needs.initialise_vars.outputs.subscription_id }}
+      template_file_name: ${{ needs.initialise_vars.outputs.template_file_name }}
+      deployment_name: ${{ needs.initialise_vars.outputs.deployment_name }}
+      parameter_file_path: ${{ needs.initialise_vars.outputs.parameter_file_path }}
+      oidc_app_reg_client_id: ${{ needs.initialise_vars.outputs.oidc_app_reg_client_id }}
+      azure_tenant_id: ${{ needs.initialise_vars.outputs.azure_tenant_id }}
