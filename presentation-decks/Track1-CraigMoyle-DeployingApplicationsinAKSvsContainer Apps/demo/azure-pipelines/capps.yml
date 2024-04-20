@@ -3,21 +3,13 @@ trigger:
     include:
       - main
 
-stage: Deploy
-  displayName: Deploy stage
-  jobs:
-  - deployment: Deploy
-    displayName: Deploy job
-    pool:
-      vmImage: ubuntu-latest
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: KubernetesManifest@0
-            displayName: Deploy to Kubernetes cluster
-            inputs:
-              action: deploy
-              namespace: Apps
-              manifests: |
-                appdeploy/aksappdeploy.yaml
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: AzureContainerApps@1
+    inputs:
+      azureSubscription: "my-service-connection"
+      containerAppName: "capps-devops-demo-app"
+      resourceGroup: "capps-demo-rg"
+      imageToDeploy: "mcr.microsoft.com/k8se/quickstart:latest"
