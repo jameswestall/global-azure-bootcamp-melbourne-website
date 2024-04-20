@@ -1,0 +1,16 @@
+# add this to your bicep configuration
+{
+ "experimentalFeaturesEnabled": {
+   "extensibility": true,
+ }
+}
+
+# Create SSH
+az sshkey create --name "mySSHKey" --resource-group "aks-demo-rg"
+
+# open bicep file
+Bicep: Import Kubernetes Manifest
+select aksappdeploy.yaml
+
+update main bicep file
+az deployment group create --resource-group aks-demo-rg --template-file ./akswithapp.bicep --parameters ./akswithapp.bicepparam

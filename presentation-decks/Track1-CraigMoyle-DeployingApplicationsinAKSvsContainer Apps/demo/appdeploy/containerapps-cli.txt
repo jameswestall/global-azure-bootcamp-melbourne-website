@@ -1,0 +1,11 @@
+az extension add --name containerapp --upgrade
+
+az containerapp up \
+  --name container-apps-demo \
+  --resource-group capps-demo-rg \
+  --location australiaeast \
+  --environment 'container-apps-demo-env' \
+  --image mcr.microsoft.com/k8se/quickstart:latest \
+  --target-port 80 \
+  --ingress external \
+  --query properties.configuration.ingress.fqdn

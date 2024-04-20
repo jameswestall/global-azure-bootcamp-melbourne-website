@@ -1,0 +1,26 @@
+# add aks preview extension
+az extension add --upgrade -n aks-preview
+
+# install kubectl and kubelogin
+sudo az aks install-cli
+
+# populate kubeconfig
+az aks get-credentials --name aks-demo --resource-group aks-demo-rg
+
+# check there's no pods running
+kubectl get pods -n apps
+
+# deploy sample website
+kubectl apply -f ./aksappdeploy.yaml -n apps
+
+# check the deployment
+kubectl get pods -n apps
+
+# check for public ip
+kubectl get service store-front --watch
+
+# cleanup resources
+kubectl delete deployment.apps/rabbitmq -n apps
+kubectl delete deployment.apps/order-service -n apps
+kubectl delete deployment.apps/product-service -n apps
+kubectl delete deployment.apps/store-front -n apps

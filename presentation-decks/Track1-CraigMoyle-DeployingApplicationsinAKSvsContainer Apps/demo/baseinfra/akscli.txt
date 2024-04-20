@@ -1,0 +1,8 @@
+az group create --name capps-demo-rg --location australiaeast
+
+az group create --name aks-demo-rg --location australiaeast
+
+az deployment group create --resource-group aks-demo-rg --template-file ./aks.bicep
+
+AKS_ID=$(az aks show -g aks-demo-rg -n aks-demo --query id -o tsv)
+az role assignment create --role "Azure Kubernetes Service RBAC Cluster Admin" --assignee craigadmin@craigsimportantcorp.onmicrosoft.com --scope $AKS_ID
