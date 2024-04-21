@@ -1,0 +1,13 @@
+Install the Azure Container Apps extension in VS Code
+
+Clone from https://github.com/Azure-Samples/containerapps-albumapi-javascript.git
+
+Sign into Azure
+
+Azure Container Apps: Deploy Project from Workspace command.
+
+Prompt                                                  Value
+Select subscription	                                    My Subscription
+Select a container apps environment	                    Create new container apps environment
+Enter a name for the new container app resource(s)	    container-app-demo-vscode
+Would you like to save your deployment configuration?	No
