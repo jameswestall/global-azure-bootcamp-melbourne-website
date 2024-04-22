@@ -1,0 +1,16 @@
+export AZURE_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"
+
+# hello world
+poetry run python demo1.py
+
+# create a resource group
+poetry run python demo2.py
+
+# create a storage account
+poetry run python demo3.py
+
+# list resource IDs
+poetry run python demo4.py
+
+# cleanup and delete all resources
+poetry run python demo5.py
