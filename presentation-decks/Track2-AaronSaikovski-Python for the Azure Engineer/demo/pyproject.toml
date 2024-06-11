@@ -37,7 +37,7 @@ packages = [{include = "azbootcamp_2024_python_demos"}]
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
 azure-mgmt-resource = "^23.0.1"
-azure-identity = "^1.16.0"
+azure-identity = "^1.16.1"
 azure-mgmt-storage = "^21.1.0"
 
 
