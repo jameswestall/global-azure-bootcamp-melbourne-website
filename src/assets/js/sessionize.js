@@ -37,7 +37,8 @@
           if (link.linkType === 'LinkedIn') iconClass = 'bi-linkedin';
           if (link.linkType === 'Blog') iconClass = 'bi-globe';
           if (link.linkType === 'Company_Website') iconClass = 'bi-building';
-          return '<a href="' + escapeHtml(link.url) + '" target="_blank"><i class="bi ' + iconClass + '"></i></a>';
+          var safeUrl = /^https?:\/\//i.test(link.url) ? link.url : '#';
+          return '<a href="' + escapeHtml(safeUrl) + '" target="_blank" rel="noopener noreferrer"><i class="bi ' + iconClass + '"></i></a>';
         }).join('');
       }
 
